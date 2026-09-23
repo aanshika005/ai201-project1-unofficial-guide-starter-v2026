@@ -21,11 +21,9 @@
 
 ## What This Does
 
-<!-- Three or four sentences. Which corpus you picked, and the kinds of
-     questions your system answers. Write it for someone who has never seen
-     this repo.
+This is a retrieval-augmented question answering system over `campus_life`, a corpus of 88 short posts about student life at a university — dining halls, dorms, courses, and the administrative rules nobody explains properly. You ask it a question in plain English and it answers from those documents, naming the file it used.
 
-     Milestone 5. -->
+It answers specific, factual questions the corpus actually covers: when housing lottery numbers come out, whether a late drop shows as a W, how long the lunch queue at Kestrel Commons runs. It is not a general chatbot — a relevance cutoff measured against the corpus stops questions the documents don't cover, and the system says it doesn't have enough information rather than guessing.
 
 ## Chunking Strategy
 
@@ -110,28 +108,37 @@ The good: cheapest housing tier by about $900 a year, and the singles are real s
 
 <!-- One complete question and answer, pasted as text, with the source line
      visible. Milestone 4. -->
+**top-k:** 5
+**My relevance cutoff:** 0.6
 
-**Question:**
+I measured both groups with `measure_cutoff.py`, which runs the five questions
+in `questions.py` and the five in `OUT_OF_SCOPE` through retrieval only.
 
-**Answer:**
-
-```
-```
-
-**My relevance cutoff:**
-
-<!-- The number you set in config.py, and how you got there.
-
-     You ran five questions your corpus covers and the five in OUT_OF_SCOPE
-     that it clearly doesn't, and wrote down the best distance for each. What
-     did those two groups look like? Where was the gap? Put the actual numbers
-     here — the table below wants all ten rows.
-
-     Milestone 4. -->
-
-| Question | In corpus? | Best distance |
+| Group | Best | Worst |
 |---|---|---|
-|  |  |  |
+| In-corpus (5 questions) | 0.1918 | 0.2953 |
+| Out-of-scope (5 questions) | 0.8246 | 0.9340 |
+
+The two groups are separated by a gap of 0.53 with nothing in it. Every
+in-corpus question matched below 0.30; the nearest out-of-scope question was 0.8246 ("What is the capital of Mongolia?", which matched a HIST 118 chunk).
+
+I kept 0.6. Any cutoff between about 0.35 and 0.80 would separate these ten questions identically, so the exact number is not doing much work — what the measurement shows is that the gap is wide, not that 0.6 is precisely tuned. 0.6 sits near the middle with room on both sides, which leaves headroom for a harder question than the five I wrote.
+
+**What this doesn't prove.** All five out-of-scope questions are from a
+different world entirely — engines, football, Rust. They were never going to land near my documents. The real test of the gate is a question that is campus-shaped but unanswered by my corpus, and I haven't measured those.
+
+**Question:** is the housing lottery random?
+
+**Answer:** Best distance 0.254, cutoff 0.6
+The housing lottery is not entirely random; rising sophomores get a randomly drawn number, but juniors and seniors are ordered by accumulated credit hours first, with random tie-breaks.
+
+Source: `admin_housing_lottery.txt`
+
+Sources retrieved: admin_housing_lottery.txt, admin_parking_permits.txt,
+advising_registration.txt, housing_innisfree_hall.txt, housing_morrow_house.txt
+```
+
+
 
 ## How I Used AI
 
@@ -144,9 +151,9 @@ The good: cheapest housing tier by about $900 a year, and the singles are real s
 
      Milestone 5. -->
 
-**1.**
+**1.** In Milestone 4, Claude gave me measure_cutoff.py to use instead of doing each question manually which I didn't ask for but I used it and also did the retrieval manually to see the difference. I looked at the code of measure_cutoff and I learnt the process to automate retrieval.
 
-**2.**
+**2.**I was having a hard time understanding why overlap should be 0. I asked Claude and the first explanation didn't land, so I asked again and got a worked example of a sentence being cut mid-price by a fixed-size chunker. That made it clear overlap is a repair for blind cutting, which my paragraph-based chunker doesn't do. I wrote the README justification in my own words from that.
 
 <!-- ── Stretch features ─────────────────────────────────────────────────────
      Doing one? Say so here BEFORE you start. A feature this README never
