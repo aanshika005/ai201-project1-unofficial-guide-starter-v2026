@@ -27,8 +27,15 @@ CORPUS = os.getenv("AI201_CORPUS", "campus_life")
 # These are deliberately plain, generic numbers. Milestone 3 is where you
 # replace them with numbers that fit the documents you actually read.
 
-CHUNK_SIZE = 800        # characters per chunk
-CHUNK_OVERLAP = 120     # characters shared between neighbouring chunks
+CHUNK_SIZE = 800        # characters per chunk (fallback_split only)
+CHUNK_OVERLAP = 120     # characters shared between neighbouring chunks (fallback only)
+
+# Numbers used by split_documents (Milestone 3, campus_life).
+# Most posts in this corpus are already a single thought, so the strategy is
+# "leave documents alone unless they are clearly carrying several topics".
+SPLIT_ABOVE = 400       # only documents longer than this are candidates for splitting
+MIN_BODY_PARAGRAPHS = 3 # ...and only if they have at least this many body paragraphs
+MIN_CHUNK = 150         # merge a paragraph into its neighbour rather than emit a fragment
 
 
 # ─── Retrieval (Milestone 4) ─────────────────────────────────────────────────

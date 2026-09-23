@@ -29,8 +29,8 @@
 
 ## Chunking Strategy
 
-**Chunk size:**
-**Overlap:**
+**Chunk size:** no fixed size — paragraph boundaries, with a 150-character floor
+**Overlap:** 0
 
 <!-- What about YOUR documents made you pick these numbers? Short posts and
      long sectioned guides don't want the same chunking, and "800 seemed
@@ -41,6 +41,21 @@
      more than pretending you got it right first time.
 
      Milestone 3. -->
+
+     Since chunk size applies to all the 88 documents not just one file I chose 150 because if I would I gone lower like 100 the chunks across all 88 documents would have shrunk and lose their meaning but by keeping it 150 I only risk accumlating information in chunks but they still be meaningful.
+
+For example:
+     At current MIN_CHUNK = 150, Old Brewhouse becomes 2 chunks, and the second one is:
+
+     The bad: the heating is uneven... Laundry costs $1.50 wash, $1.50 dry... On noise: sound carries strangely...
+
+     Heating, laundry, and noise all in one chunk. So "how much is laundry at Old Brewhouse?" retrieves a chunk that is mostly about other things.
+
+     Lower the floor to MIN_CHUNK = 100 and it becomes 3 chunks, with laundry and noise on their own:
+
+     Laundry costs $1.50 wash, $1.50 dry, coin only, and the machines are old. On noise: sound carries strangely...
+
+I've kept overlap at zero because I split on paragraph breaks rather than character counts. Overlap exists to repair sentences severed by a blind cut, and a blank line never falls mid-sentence, so there is nothing to repair.
 
 ## Sample Chunks
 
@@ -53,30 +68,43 @@
 
      Milestone 3. -->
 
-**Chunk 1** — source: `` — produced by: ``
+**Chunk 1** — source: `admin_add_drop_deadline.txt#0` — produced by: `chunker.py::split_documents`
 
-```
-```
+On the add/drop deadline
 
-**Chunk 2** — source: `` — produced by: ``
+You can add a course through the end of the second week. Dropping is a longer window — through the end of week six — but a drop after week two shows as a W on your transcript. Nothing anywhere on the registrar's site says this plainly, and students find out from each other.
 
-```
-```
+**Chunk 2** — source: `course_biol_160_workload.txt#0` — produced by: `chunker.py::split_documents`
 
-**Chunk 3** — source: `` — produced by: ``
+Workload for BIOL 160 Cell Biology
 
-```
-```
+People keep asking so: 9 to 11 hours a week, the heaviest first-year course by reputation. That's real time, not optimistic time.
 
-**Chunk 4** — source: `` — produced by: ``
+It's front-loaded — the first month is heavier than the rest, partly because you're learning the format.
 
-```
-```
+**Chunk 3** — source: `course_math_220_exams.txt#0` — produced by: `chunker.py::split_documents`
 
-**Chunk 5** — source: `` — produced by: ``
+MATH 220 Linear Algebra — assessment
 
-```
-```
+Two midterms and a cumulative final. Curved to a b- median.
+
+The problem sets are the course; the lectures make sense afterwards rather than during.
+
+**Chunk 4** — source: `dining_the_ridgeway_cafe_followup.txt#0` — produced by: `chunker.py::split_documents`
+
+Re: The Ridgeway Café
+
+Adding to what people have said about The Ridgeway Café. The wait figure of 10 to 15 minutes at 12:30 matches what I've seen. If you're trying to eat between classes, go before 11:45 and it's a different building entirely.
+
+Also worth saying: seating is tight; about 40 seats for a building of 900. Nobody tells you this at orientation.
+
+**Chunk 5** — source: `housing_morrow_house.txt#0` — produced by: `chunker.py::split_documents`
+
+Morrow House — what it's actually like
+
+Just finished a year in this building. Built 1954, partially renovated 2008. Rooms are singles and doubles, hall bathrooms.
+
+The good: cheapest housing tier by about $900 a year, and the singles are real singles.
 
 ## Sample Answer
 

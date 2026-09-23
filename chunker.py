@@ -80,24 +80,80 @@ def fallback_split(
     return chunks
 
 
+def _blocks(text: str) -> list[str]:
+    """Blank-line-separated paragraphs, empties dropped."""
+    return [b.strip() for b in text.strip().split("\n\n") if b.strip()]
+
+
+def _looks_like_title(block: str) -> bool:
+    """A campus_life document opens with a short one-line heading."""
+    return "\n" not in block and len(block) < 120
+
+
 def split_documents(documents: list[Document]) -> list[Chunk]:
     """
-    Split documents into chunks. ⚠️ REPLACE THE BODY OF THIS IN MILESTONE 3.
+    Paragraph-aware chunker for campus_life.
 
-    Right now it just calls the fallback. That is the plain, generic behaviour
-    the brief is talking about.
+    The corpus is 88 short posts averaging 317 characters, and most of them are
+    already a single thought — splitting those would only manufacture
+    fragments. A handful are not: the longest, housing_old_brewhouse.txt, packs
+    brewery history, heating, laundry prices and noise into 554 characters, so
+    a question about any one of those matches a vector that is mostly about the
+    other three.
 
-    When you write your own strategy, set `produced_by` to
-    "chunker.py::split_documents" so your README's Sample Chunks section names
-    the right function. `app.py chunks` prints that string for you.
+    So the strategy is conditional. A document is left whole unless it is both
+    longer than config.SPLIT_ABOVE and carries at least
+    config.MIN_BODY_PARAGRAPHS body paragraphs. When a document does split, it
+    splits on paragraph boundaries rather than a character count, short
+    paragraphs are merged forward until they clear config.MIN_CHUNK, and the
+    document's title line is prepended to every piece — without it, "The bad:
+    the heating is uneven" no longer says which building it is about.
 
-    Things worth thinking about before you write any code:
-      - Are your documents short posts or long guides?
-      - Is the useful information in one sentence, or spread over a paragraph?
-      - Would splitting on paragraph breaks keep more thoughts intact than
-        splitting on a character count?
+    No character overlap: paragraph boundaries do not sever sentences, and the
+    repeated title already carries the shared context that overlap exists for.
     """
-    return fallback_split(documents)
+    chunks: list[Chunk] = []
+
+    for doc in documents:
+        blocks = _blocks(doc.text)
+        if not blocks:
+            continue
+
+        has_title = len(blocks) > 1 and _looks_like_title(blocks[0])
+        title = blocks[0] if has_title else ""
+        body = blocks[1:] if has_title else blocks
+
+        # Leave short or single-topic posts exactly as they are.
+        if len(doc.text) <= config.SPLIT_ABOVE or len(body) < config.MIN_BODY_PARAGRAPHS:
+            pieces = [doc.text.strip()]
+        else:
+            # Merge paragraphs forward until each piece clears the floor.
+            merged: list[str] = []
+            buffer = ""
+            for para in body:
+                buffer = f"{buffer}\n\n{para}" if buffer else para
+                if len(buffer) >= config.MIN_CHUNK:
+                    merged.append(buffer)
+                    buffer = ""
+            if buffer:                       # trailing remainder is never left alone
+                if merged:
+                    merged[-1] = f"{merged[-1]}\n\n{buffer}"
+                else:
+                    merged.append(buffer)
+
+            pieces = [f"{title}\n\n{m}" if title else m for m in merged]
+
+        for index, piece in enumerate(pieces):
+            chunks.append(
+                Chunk(
+                    text=piece,
+                    source=doc.source,
+                    index=index,
+                    produced_by="chunker.py::split_documents",
+                )
+            )
+
+    return chunks
 
 
 def describe(chunks: list[Chunk]) -> str:
