@@ -25,7 +25,7 @@ contains the answer.
 **Why this target:**
 <!-- e.g. "One of my questions is about a topic only two documents mention, so
      I expect that one to be hard." -->
-
+Forcing a retrieval system to be perfect would make the test fail on noise rather than on real problems; 4/5 still means only one acceptable miss across a small,deliberately varied set of questions.
 ---
 
 ## 2. Every answer names a source
@@ -35,7 +35,7 @@ Every answer the system produces names at least one source document.
 **Why this target:**
 <!-- Why all five and not four? What about your setup makes that achievable —
      or what would have to go wrong for it not to be? -->
-
+A system that cites sometimes and not other times isn't "mostly trustworthy" because you never know which answer you're getting. 
 ---
 
 ## 3. The relevance gate stops out-of-corpus questions
@@ -52,45 +52,28 @@ in at least 4 of 5 tries.
 **Why this target:**
 <!-- What did your distances look like when you set the cutoff in Milestone 4?
      Was there a clean gap, or did the two groups overlap? -->
-
+Same logic as #1. If I force the gate to be perfect about saying "I don't know," it'll start blocking the legitimate questions that can be answered therefore 4/5 tries is acceptable.
 ---
 
-## 4. Something about your chunks
-
-<!-- YOU WRITE THIS ONE.
-
-     How would you know if your chunks were the right size? Name something
-     countable or observable.
-
-     Examples of the right shape — don't copy these, they should come from
-     what you actually saw in Milestone 3:
-       - "At least 4 of 5 sampled chunks read as a complete thought, with no
-          sentence cut in half at either end."
-       - "No chunk is shorter than 200 characters, since anything below that
-          in my corpus turned out to be a heading with no content under it." -->
+## 4. Chunk-size check
+For at least 4 of the 5 test questions, the chunk with the answer has the whole sentence(s).
+<!-- For at least 4 of the 5 test questions, the chunk that contains the answer contains the full supporting sentence(s) intact with no cut off mid-sentence at the start or end of the chunk. -->
 
 
 
 **Why this target:**
-
-
+A couple of these documents (housing lottery, Kestrel Commons follow-up) pack two related facts into adjacent sentences — I don't want to force a chunk size so large that unrelated documents get merged just to guarantee zero splits. One tolerated split is a signal to look at chunk size, not a hard failure.
 
 ---
 
-## 5. Your choice
-
-<!-- YOU WRITE THIS ONE TOO.
-
-     Pick something you actually care about getting right. It could be about
-     speed, about refusals, about a particular kind of question your corpus
-     handles badly, about source attribution being correct rather than merely
-     present — anything, as long as it names a number or an observable
-     outcome. -->
+## 5. Every question that has numeric answer produces exact number
+For all 5 test questions where the answer includes a specific number (minutes, hours, a week number), the system's output reproduces that number exactly (no rounding, no ranging).
+<!-- Why all five and not four? What is the reason for this strictness -->
 
 
 
 **Why this target:**
-
+These documents are full of close, similar-looking numbers (6 hrs vs 9-11 hrs, "week two" vs "week six", "20 to 25 minutes," "1:15" vs "1:30") that are easy to blend or round under paraphrase, and a wrong number reads as confidently as a right one.
 
 
 ---
