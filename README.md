@@ -182,15 +182,44 @@ advising_registration.txt, housing_innisfree_hall.txt, housing_morrow_house.txt
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+| 1. Retrieved chunks contain the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Answer chunk has whole sentences, no mid-sentence cut | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 5. Numeric answers reproduce the number exactly | 5 of 5 | 4/4 | 4/4 | 4/4 | MET |
 
 <!-- Underneath, paste the REAL output for each criterion from one of your
      runs — the actual text your system produced, not a description of it.
      Name the file and function that produced it. -->
+
+### What time does The Atrium's sandwich selection typically run out? — run 1
+
+- Best distance: 0.2953 (passed the gate)
+- Sources retrieved: dining_halden_hall_followup.txt, dining_kestrel_commons_followup.txt, dining_north_kitchen_followup.txt, dining_the_atrium.txt, dining_the_atrium_followup.txt
+
+```
+The Atrium's sandwiches are typically picked clean by 1:15 (dining_the_atrium.txt and dining_the_atrium_followup.txt).
+```
+
+### What time does The Atrium's sandwich selection typically run out? — run 2
+
+- Best distance: 0.2953 (passed the gate)
+- Sources retrieved: dining_halden_hall_followup.txt, dining_kestrel_commons_followup.txt, dining_north_kitchen_followup.txt, dining_the_atrium.txt, dining_the_atrium_followup.txt
+
+```
+The Atrium's sandwich selection is typically picked clean by 1:15. 
+
+Source: `dining_the_atrium.txt` (and also mentioned in `dining_the_atrium_followup.txt`).
+```
+
+### What time does The Atrium's sandwich selection typically run out? — run 3
+
+- Best distance: 0.2953 (passed the gate)
+- Sources retrieved: dining_halden_hall_followup.txt, dining_kestrel_commons_followup.txt, dining_north_kitchen_followup.txt, dining_the_atrium.txt, dining_the_atrium_followup.txt
+
+```
+The Atrium's sandwiches are typically picked clean by 1:15 (dining_the_atrium.txt and dining_the_atrium_followup.txt).
+```
 
 ## Verdicts
 
