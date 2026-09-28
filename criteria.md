@@ -56,10 +56,7 @@ Same logic as #1. If I force the gate to be perfect about saying "I don't know,"
 ---
 
 ## 4. Chunk-size check
-For at least 4 of the 5 test questions, the chunk with the answer has the whole sentence(s).
-<!-- For at least 4 of the 5 test questions, the chunk that contains the answer contains the full supporting sentence(s) intact with no cut off mid-sentence at the start or end of the chunk. -->
-
-
+For at least 4 of the 5 test questions, the chunk that contains the answer contains the full supporting sentence(s) intact with no cut off mid-sentence at the start or end of the chunk.
 
 **Why this target:**
 A couple of these documents (housing lottery, Kestrel Commons follow-up) pack two related facts into adjacent sentences — I don't want to force a chunk size so large that unrelated documents get merged just to guarantee zero splits. One tolerated split is a signal to look at chunk size, not a hard failure.
@@ -70,10 +67,12 @@ A couple of these documents (housing lottery, Kestrel Commons follow-up) pack tw
 For all 5 test questions where the answer includes a specific number (minutes, hours, a week number), the system's output reproduces that number exactly (no rounding, no ranging).
 <!-- Why all five and not four? What is the reason for this strictness -->
 
-
-
 **Why this target:**
 These documents are full of close, similar-looking numbers (6 hrs vs 9-11 hrs, "week two" vs "week six", "20 to 25 minutes," "1:15" vs "1:30") that are easy to blend or round under paraphrase, and a wrong number reads as confidently as a right one.
+
+**Revised in unit 2:** Every numeric value that appears in an answer matches the source document exactly.
+
+**Reason:** The original says "all 5 test questions," but only four of my five questions have a numeric answer, so "5" was never a reachable denominator. The revision counts values rather than questions, which is what I was actually checking.
 
 
 ---
