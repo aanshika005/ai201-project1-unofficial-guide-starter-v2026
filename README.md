@@ -192,33 +192,29 @@ advising_registration.txt, housing_innisfree_hall.txt, housing_morrow_house.txt
      runs — the actual text your system produced, not a description of it.
      Name the file and function that produced it. -->
 
-### What time does The Atrium's sandwich selection typically run out? — run 1
+### Criterion 1, 2, 4 and 5 — run 1
+Question: What time does The Atrium's sandwich selection typically run out?
+Best distance: 0.295 (passed the gate)
+Produced by: run_eval.py::main → store.py::search → generate.py::answer_from_chunks
 
-- Best distance: 0.2953 (passed the gate)
-- Sources retrieved: dining_halden_hall_followup.txt, dining_kestrel_commons_followup.txt, dining_north_kitchen_followup.txt, dining_the_atrium.txt, dining_the_atrium_followup.txt
+The Atrium's sandwiches are typically picked clean by 1:15
+(dining_the_atrium.txt and dining_the_atrium_followup.txt).
 
-```
-The Atrium's sandwiches are typically picked clean by 1:15 (dining_the_atrium.txt and dining_the_atrium_followup.txt).
-```
+### Criterion 3 — the gate, run once 
+Produced by: run_eval.py::check_out_of_scope, cutoff 0.6
 
-### What time does The Atrium's sandwich selection typically run out? — run 2
+| What is the capital of Mongolia? | 0.825 | refused |
+| How do I change the oil in a diesel engine? | 0.934 | refused |
 
-- Best distance: 0.2953 (passed the gate)
-- Sources retrieved: dining_halden_hall_followup.txt, dining_kestrel_commons_followup.txt, dining_north_kitchen_followup.txt, dining_the_atrium.txt, dining_the_atrium_followup.txt
+### The scorer's false negative — run 1
+Question: How does a work-study job affect financial aid...?
+Best distance: 0.1918 (passed the gate)
+Marked fail by scorer.py::judge
 
-```
-The Atrium's sandwich selection is typically picked clean by 1:15. 
+Work-study earnings do not count against your financial aid the way ordinary
+income does, whereas non-work-study campus jobs do count.
 
-Source: `dining_the_atrium.txt` (and also mentioned in `dining_the_atrium_followup.txt`).
-```
-
-### What time does The Atrium's sandwich selection typically run out? — run 3
-
-- Best distance: 0.2953 (passed the gate)
-- Sources retrieved: dining_halden_hall_followup.txt, dining_kestrel_commons_followup.txt, dining_north_kitchen_followup.txt, dining_the_atrium.txt, dining_the_atrium_followup.txt
-
-```
-The Atrium's sandwiches are typically picked clean by 1:15 (dining_the_atrium.txt and dining_the_atrium_followup.txt).
+Source: admin_campus_jobs_and_financial_aid.txt
 ```
 
 ## Verdicts
