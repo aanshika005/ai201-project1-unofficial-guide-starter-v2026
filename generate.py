@@ -254,11 +254,22 @@ def generate(prompt: str, system: str | None = None, cache: bool = True) -> str:
                 or "resource" in message and "exhaust" in message
                 or "rate" in message and "limit" in message
             )
-            if not rate_limited:
+            # 503 UNAVAILABLE is the service being overloaded, not a fault in
+            # this code. It is transient and worth the same backoff a rate
+            # limit gets — without this, one busy moment kills a whole eval run
+            # partway through.
+            overloaded = (
+                "503" in message
+                or "unavailable" in message
+                or "overloaded" in message
+                or "high demand" in message
+            )
+            if not (rate_limited or overloaded):
                 raise
             backoff = 2 ** attempt
+            reason = "rate limit" if rate_limited else "service overloaded"
             print(
-                f"  [rate limit] service pushed back. Retrying in {backoff}s "
+                f"  [{reason}] service pushed back. Retrying in {backoff}s "
                 f"(attempt {attempt + 1} of {config.MAX_RETRIES}).",
                 file=sys.stderr,
                 flush=True,
