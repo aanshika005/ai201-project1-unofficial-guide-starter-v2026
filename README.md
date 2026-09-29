@@ -374,7 +374,7 @@ Even though I already changed my chunker for criterion 4 but it didn't change mu
 Also, I'd change the 'scorer.py' to accept a list of acceptable phrases rather than a single string, and reject any `expects` shorter than three characters so a single letter can't match everything.
 
 ## Why I stopped
-I stopped because Milestone 4 strictly said only one change should be done. I had already changed the chunking, and fixing the scorer in the same pass would have left me unable to say which change did what. It is the first thing I would do next.
+I stopped because Milestone 4 strictly said only one change should be done. I had already changed the chunking once, and changing it again along with fixing the scorer would have left me unable to say which change did what. It is the first thing I would do next.
 
 I'm also short on time because I'm between a lot of things nowadays.
 
@@ -382,3 +382,8 @@ I'm also short on time because I'm between a lot of things nowadays.
 Whenever I was trying to run the run_eval file the gemini service was busy so I asked claude to make changes to the generate.py file because it only handles 429 (resource exhausted/ rate limit) as retryable and 503 was not accounted for thats why when gemini was busy my whole program was crashing instead of automatically trying again. The change made it treat 503 as the same way as 429.
 
 Secondly, When I made changes in the chunking mechanism I was unable to spot the difference on my own initially as all the numbers in the result file were still the same. I asked claude and it pointed out the 8 files that were different from the previously chunked files. It mentioned the name of the files and also helped with understand the justification of why all the numbers were still same in the result file.
+
+## Stretch: A second measured improvement
+I am making a second change and logging it the same way: fixing
+`scorer.py::judge` so it no longer relies on a single bare substring match.
+
