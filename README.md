@@ -136,7 +136,7 @@ Source: `admin_housing_lottery.txt`
 
 Sources retrieved: admin_housing_lottery.txt, admin_parking_permits.txt,
 advising_registration.txt, housing_innisfree_hall.txt, housing_morrow_house.txt
-```
+
 
 
 
@@ -161,7 +161,7 @@ advising_registration.txt, housing_innisfree_hall.txt, housing_morrow_house.txt
      ───────────────────────────────────────────────────────────────────────── -->
 
 ---
-```
+
 # Unit 2
 
 <!-- These sections get ADDED to what's already above. Don't delete or rewrite
@@ -384,6 +384,107 @@ Whenever I was trying to run the run_eval file the gemini service was busy so I 
 Secondly, When I made changes in the chunking mechanism I was unable to spot the difference on my own initially as all the numbers in the result file were still the same. I asked claude and it pointed out the 8 files that were different from the previously chunked files. It mentioned the name of the files and also helped with understand the justification of why all the numbers were still same in the result file.
 
 ## Stretch: A second measured improvement
-I am making a second change and logging it the same way: fixing
-`scorer.py::judge` so it no longer relies on a single bare substring match.
+
+I am making a second change and logging it the same way: fixing `scorer.py::judge` so it no longer relies on a single bare substring match. I also changed my question 3 expects to "W on your transcript" instead of just "W" to align with my new scorer.py's new minimum answer length of 3.
+
+**What I changed — two edits, and I am counting them as two.**
+
+1. `scorer.py::judge`. It now normalises both sides before comparing
+   (lowercase, expand contractions, flatten punctuation), accepts a list of
+   acceptable phrasings rather than one string, and refuses to score against
+   an `expects` shorter than three characters. The original is kept in the
+   file as `judge_v1` rather than deleted.
+2. Two `expects` values in `questions.py`: `"W"` → `"W on your transcript"`,
+   and `"doesn't count"` → `"don't count"`.
+
+**Which diagnosed failure this fixes.** Both halves of the diagnosis in
+"Diagnoses" above. The false negative: work-study scored fail on all six runs
+because the document says "don't count" and my `expects` said "doesn't count".
+The false positive: `expects: "W"` lowercased to "w", which appears in every
+English sentence, so that question passed unconditionally — including, had the
+answer been wrong, on a wrong answer.
+
+**Separating the two edits.** Because this is two changes, I checked which one
+did the work. Holding the new `expects` constant and swapping only the scorer:
+
+| | old scorer (`judge_v1`) | new scorer (`judge`) |
+|---|---|---|
+| questions passing | 4 / 5 | 5 / 5 |
+
+The work-study question flips purely because of the scorer — `"don't count"`
+as a literal substring is still not present in "do not count", so only the
+contraction normaliser makes it match. The `expects` edits did a different
+job: they replaced defective test data. `"doesn't count"` was the wrong
+conjugation of what the source document actually says, and `"W"` was a single
+letter that could never discriminate a right answer from a wrong one. Neither
+edit lowered a bar.
+
+### Run Log — After (second improvement)
+
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. Retrieved chunk contains the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Answer chunk has whole sentences, no mid-sentence cut | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 5. Numeric values in an answer match the source exactly | all | 4/4 | 4/4 | 4/4 | MET |
+
+Full log: `results/run_2026-09-29_1106_after2.md`. Produced by
+`run_eval.py::main`, scored by `scorer.py::judge`.
+
+**Did it help?** Yes, but not in the way the criteria table shows — the table
+is identical across all three logs, because all five criteria were MET from
+the start.
+
+What moved is underneath it, in the per-question scorer output:
+
+| | before | after | after2 |
+|---|---|---|---|
+| Questions marked pass by the scorer | 4 / 5 | 4 / 5 | **5 / 5** |
+| Known false negatives | 1 (work-study) | 1 (work-study) | **0** |
+| Known false positives | 1 (`expects: "W"`) | 1 (`expects: "W"`) | **0** |
+| Best distances | 0.1918–0.3860 | identical | identical |
+| Gate refusals | 5 / 5 | 5 / 5 | 5 / 5 |
+
+The distances are unchanged across all three runs because neither improvement
+touched retrieval — the first changed chunking on eight documents none of my
+questions retrieve, and this one changed only how answers are scored.
+
+So the honest summary is that my first improvement was invisible to my test
+and my second improvement was invisible to my criteria. The measurement is now
+correct where it was previously wrong in both directions, which is worth
+having — but no criterion could show it, because every criterion was already
+being reported as MET by my own manual reading. The scorer was wrong and the
+verdicts were right, which is only true because I did not trust the scorer
+when I wrote them.
+
+## What I did
+This stretch improvement was two edits, not one: scorer.py::judge, and two
+expects phrases in questions.py. The new scorer gets 5/5 with changing the expects, the work-study question flips purely because the normaliser treats "don't count" and "do not count" as equal. The expects edits fixed defective test data,"doesn't count" was the wrong conjugation of what the source document says, and
+"W" was a single letter that matched every answer including wrong ones.
+
+## Did it help
+Yes, it helped in the following way:
+| Criteria| before | after |	after2 |
+|---|---|---|---|
+|Questions marked pass by the scorer |	4 / 5 | 4 / 5 | 5 / 5 |
+|Known false negatives |	1 |	1 |	0 |
+|Known false positives |	1 |	1 |	0 |
+|Best distances |	0.1918–0.3860 | identical | identical |
+|Gate refusals | 5 / 5 | 5 / 5 | 5 / 5 |
+
+## Run log
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. Retrieved chunks contain the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Answer chunk has whole sentences, no mid-sentence cut | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 5. Numeric answers reproduce the number exactly | 5 of 5 | 4/4 | 4/4 | 4/4 | MET |
+
+## How I Used AI
+I used AI to build the new improved scorer_py::judge and worked along with it after every run because question 3 was stilling failing so I changed the expects and everything then worked as expected.
+
+
+
 
