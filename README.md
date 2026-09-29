@@ -1,6 +1,6 @@
 # The Unofficial Guide
 
-<!-- Replace this line with your name and which corpus you picked. -->
+<!--Name: Anshika Choudhary, Corpus: Campus life -->
 
 > **This file is your submission.** Fill it in as you go — most sections get
 > written during the milestone that produces them, not at the end.
@@ -161,7 +161,7 @@ advising_registration.txt, housing_innisfree_hall.txt, housing_morrow_house.txt
      ───────────────────────────────────────────────────────────────────────── -->
 
 ---
-
+```
 # Unit 2
 
 <!-- These sections get ADDED to what's already above. Don't delete or rewrite
@@ -215,7 +215,7 @@ Work-study earnings do not count against your financial aid the way ordinary
 income does, whereas non-work-study campus jobs do count.
 
 Source: admin_campus_jobs_and_financial_aid.txt
-```
+
 
 ## Verdicts
 
@@ -240,26 +240,7 @@ Source: admin_campus_jobs_and_financial_aid.txt
 
 ## Diagnoses
 
-<!-- For each miss: which stage caused it, and how. The stage alone isn't
-     enough — you need the mechanism.
-
-     Not a diagnosis: "Question 3 didn't work."
-     A diagnosis:     "Question 3 asks about laundry costs. The answer is in
-                       one sentence that got split across two chunks, so
-                       neither chunk on its own contains it."
-
-     The five stages: loading → chunking → embedding → retrieval → generation.
-
-     Look for a pattern. If three misses all ask about numbers, that's one
-     problem, not three.
-
-     Missed nothing? Say so, then say honestly whether your targets were set
-     low, and which one you'd tighten and to what.
-
-     Milestone 3. -->
-## Diagnoses
-
-**No criterion was missed.** All five criteria were MET across three runs. Eventhough two things went wrong but neither of them happened in the pipeline.
+**No criterion was missed.** All five criteria were MET across three runs. Even though two things went wrong but neither of them happened in the pipeline.
 
 **The pattern: both problems were in the measurement, not the system.** Across
 all five questions and all three runs, every stage did its job — loading,
@@ -321,12 +302,19 @@ the campus health centre?", here the gate would be under actual pressure.
 
 ## The Improvement
 
-**What I changed:**
+**What I changed:** I changed the `MIN_CHUNK` in `config.py`, from 150 to 100.
+Nothing else was touched: same corpus, same top-k of 5, same 0.6
+cutoff, same `expects` phrases, same `scorer.py`.
 
-**Why I picked it:**
+Effect on the index: 96 chunks -> 103, average length 293 -> 276, shortest 178 -> 143. Eight documents are chunked differently.
 
-<!-- Connect it to a specific diagnosis above in one sentence. If you can't,
-     you picked a fix because it sounded impressive. -->
+Also, 0.2953 was the worst-case in my unit 1 cutoff table and it now measures 0.3860. The gap narrows from 0.53 to 0.44, which means my threshold of 0.6 is still unreached.
+
+**Why I picked it:** My diagnosis said criterion 4 could not fail, because my
+chunker only cuts at blank lines. The real weakness it was failing to catch
+was `housing_old_brewhouse.txt`, where the 150 floor merged the heating
+paragraph (110 characters) with the laundry and noise paragraph, leaving three
+unrelated topics sharing one chunk. Lowering the floor to 100 separates them.
 
 ### Run Log — After
 
@@ -335,34 +323,62 @@ the campus health centre?", here the gate would be under actual pressure.
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+| 1. Retrieved chunk contains the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Answer chunk has whole sentences, no mid-sentence cut | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 5. Numeric values in an answer match the source exactly | all | 4/4 | 4/4 | 4/4 | MET |
+
+Identical to the before table, row for row.
 
 **Did it help?**
 
-<!-- Say plainly whether it did, and how you know. If it made things worse,
-     say that — a change that backfired, honestly reported, earns full credit
-     and is more interesting than one that worked. What matters is that you can
-     tell.
+I can't tell from this test even though 8 documents are chunked differently now and my reference file `housing_old_brewhouse.txt` now splits into three chunks with laundry prices standing on their own. But every distance in the after run is identical to the before run to four decimal places, including the out-of-scope ones:
 
-     Milestone 4. -->
+| Question | Before | After |
+|---|---|---|
+| Work-study vs non-work-study | 0.1918 | 0.1918 |
+| Kestrel Commons wait times | 0.2345 | 0.2345 |
+| Add/drop after week two | 0.2607 | 0.2607 |
+| The Atrium sandwiches | 0.2953 | 0.2953 |
+| Housing lottery number | 0.3860 | 0.3860 |
+
+That is not a bug and not a null result. The eight re-chunked documents are:
+
+course_cs_210.txt          housing_innisfree_hall.txt
+course_stat_150.txt        housing_morrow_house.txt
+housing_calder_annexe.txt  housing_old_brewhouse.txt
+housing_fenwick_court.txt  housing_tamsin_court.txt
+
+None of them is the top match for any of my ten questions. All nine documents
+my questions actually retrieve are short posts that stay whole under either
+floor, so their embeddings are unchanged and their distances cannot move.
+
+**My test set cannot detect improvement.** All five of my questions are
+single-document lookups against short posts, so none of them used the files that changed after chunking. To measure this properly I would have needed a question
+about one of the long multi-topic housing posts like "how much is laundry at Old
+Brewhouse?", as this question shares a chunk with heating and noise at a floor of 150 and stands alone at 100.
+
+I have deliberately not added that question. Changing the test between the
+before and after runs would make the comparison meaningless.
 
 ## What's Still Broken
+All the targets/criterion are satisfied but the following things need to be fixed:
+1. scorer.py needs to updated in a way that it compares the meaning of provided answer with the expected answer instead of just comparing the substrings in the provided answer. It marked a correct work-study answer fail on all six runs, before and after, because the document says "don't count" and my `expects` says "doesn't count". The same mechanism produces false passes: my original `expects` of `"W"` matched the letter w in any answer, so that question would have passed even on a wrong answer. I caught that one by reading, but I would not catch the next one.
 
-<!-- For each criterion still missed after your fix: what you'd do about it,
-     and why you stopped where you did.
-
-     "I ran out of time" is fine if it's true. Pretending nothing is left is
-     not.
-
-     Milestone 5. -->
+2. Lowering `MIN_CHUNK` to 100 separated laundry prices from heating in `housing_old_brewhouse.txt`, but the document still doesn't come apart cleanly. Chunk #2 holds laundry prices and the noise paragraph together; chunk #1 holds "the good" and the heating complaint. Two topics per chunk instead of three is an improvement, but not a fix.
 
 ## What I'd Do Differently
+Even though I already changed my chunker for criterion 4 but it didn't change much in the chunking process so  I'd have written it about what my chunker can actually get wrong i.e., whether a chunk holds more than one topic. All five of my questions ask about short single-topic posts, so none of them touches the long multi-topic documents my chunker was built to handle. I changed the chunking and every distance stayed identical to four decimal places. Next time I'd write at least one question per document shape in the corpus, so the test can see the component I spend the most time on.
 
-<!-- Knowing what you know now — which of your five criteria would you write
-     differently, and why?
+Also, I'd change the 'scorer.py' to accept a list of acceptable phrases rather than a single string, and reject any `expects` shorter than three characters so a single letter can't match everything.
 
-     Milestone 5. -->
+## Why I stopped
+I stopped because Milestone 4 strictly said only one change should be done. I had already changed the chunking, and fixing the scorer in the same pass would have left me unable to say which change did what. It is the first thing I would do next.
+
+I'm also short on time because I'm between a lot of things nowadays.
+
+## How I Used AI
+Whenever I was trying to run the run_eval file the gemini service was busy so I asked claude to make changes to the generate.py file because it only handles 429 (resource exhausted/ rate limit) as retryable and 503 was not accounted for thats why when gemini was busy my whole program was crashing instead of automatically trying again. The change made it treat 503 as the same way as 429.
+
+Secondly, When I made changes in the chunking mechanism I was unable to spot the difference on my own initially as all the numbers in the result file were still the same. I asked claude and it pointed out the 8 files that were different from the previously chunked files. It mentioned the name of the files and also helped with understand the justification of why all the numbers were still same in the result file.

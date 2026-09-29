@@ -35,7 +35,11 @@ CHUNK_OVERLAP = 120     # characters shared between neighbouring chunks (fallbac
 # "leave documents alone unless they are clearly carrying several topics".
 SPLIT_ABOVE = 400       # only documents longer than this are candidates for splitting
 MIN_BODY_PARAGRAPHS = 3 # ...and only if they have at least this many body paragraphs
-MIN_CHUNK = 150         # merge a paragraph into its neighbour rather than emit a fragment
+MIN_CHUNK = 100         # merge a paragraph into its neighbour rather than emit a fragment
+# Unit 2 improvement: lowered from 150 to 100. At 150 the heating paragraph in
+# housing_old_brewhouse.txt (110 chars) merged with the laundry and noise
+# paragraph, leaving three topics sharing one chunk. At 100 they separate.
+# Cost: shortest chunk corpus-wide falls from 178 to 143 characters.
 
 
 # ─── Retrieval (Milestone 4) ─────────────────────────────────────────────────
