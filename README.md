@@ -257,6 +257,67 @@ Source: admin_campus_jobs_and_financial_aid.txt
      low, and which one you'd tighten and to what.
 
      Milestone 3. -->
+## Diagnoses
+
+**No criterion was missed.** All five criteria were MET across three runs. Eventhough two things went wrong but neither of them happened in the pipeline.
+
+**The pattern: both problems were in the measurement, not the system.** Across
+all five questions and all three runs, every stage did its job — loading,
+chunking, embedding, retrieval and generation. Retrieval put the correct
+document first every time, with best distances between 0.19 and 0.39 against a
+0.6 cutoff. Generation stayed inside the sources and cited a file in all 15
+answers. What broke was how I was counting.
+
+1. `scorer.py::judge` marked a correct answer wrong, three runs out of
+three. Question 4 asks how work-study affects financial aid. The system
+answered:
+
+Work-study earnings do not count against your financial aid the way ordinary
+income does, whereas non-work-study campus jobs do count.
+
+Source: admin_campus_jobs_and_financial_aid.txt
+
+That is correct, grounded and cited. It was marked fail because `judge` does a
+substring test and my `expects` was `"doesn't count"` while the source document and the answer says "don't count". 
+
+The opposite thing happened with question 3. My original `expects` for question 3 was `"W"`. Both sides get lowercased, so that tested whether the letter `w` appeared anywhere in the answer, which it always does. That question would have passed unconditionally, including on a wrong answer. One mechanism, two opposite failure modes, and the false pass is the one I would never have noticed.
+
+I judged criterion 1 by reading the retrieved sources rather than by trusting
+the scorer's column, which is why it reports 5/5.
+
+2. Criterion 5 had an unreachable denominator. I wrote it as "all 5 test
+questions where the answer includes a specific number," but only four of my
+five answers contain a number. The criterion counted questions when what I was
+actually checking was values. Revised in `criteria.md`, with the original left
+in place.
+
+---
+
+### Were my targets set low?
+
+Partly, yes. Clearing all five on the first attempt says more about the test
+than about the system.
+
+Three things made it easy. All five of my questions are single-document
+lookups with the answer sitting in one sentence and none is about a topic only a document or two mentions. My five out-of-scope questions are from a different world entirely (Mongolia, diesel engines, Rust), so the gate was separating 0.19–0.39 from 0.82–0.93, a gap of 0.53 with nothing in it. And `campus_life` is a clean, purpose-written corpus with no contradictions or duplicates to trip over.
+
+**The criterion I would tighten is 4.** As written it cannot fail.
+`chunker.py::split_documents` cuts only at blank lines between paragraphs, so a
+mid-sentence split is structurally impossible — I was measuring a property of
+my chunker's design rather than an outcome of a run. A criterion that cannot
+fail measures nothing.
+
+I would replace it with: **for at least 4 of 5 questions, the chunk containing
+the answer covers no more than one topic.** That is checkable by reading, and
+it would currently fail on `housing_old_brewhouse.txt#1`, where heating,
+laundry prices and noise still share a chunk because my 150-character floor
+merged them. That is a real weakness in my chunking that criterion 4 as
+written was never going to catch.
+
+Secondary: criterion 3's target of 4 of 5 is safe when the out-of-scope
+questions are that far away. A harder version would swap them for
+campus-shaped questions my corpus doesn't answer like "what are the wait times at
+the campus health centre?", here the gate would be under actual pressure.
 
 ## The Improvement
 
